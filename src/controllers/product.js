@@ -1,5 +1,5 @@
 const fs = require('fs')
-const { product } = require('../../models')
+const { product: table } = require('../../models')
 const { validCheck, handleImage, failed } = require('../functions')
 
 const imagepath = 'products'
@@ -7,24 +7,27 @@ const imagepath = 'products'
 //Get All Product
 exports.getProducts = async (req, res) => {
     try {
+        const { limit, offset, status } = req.query
+
         const query = {
             attributes: {
                 exclude: ['createdAt', 'updatedAt'],
             },
         }
-        const { limit, offset } = req.query
 
+        if (status) query.where = { status }
         if (limit) query.limit = parseInt(limit)
         if (offset) query.offset = parseInt(offset)
 
-        const result = await product.findAll(query)
+        const { count, rows } = await table.findAndCountAll(query)
 
-        result.filter((item) => (item.image = item.image ? handleImage(item.image, imagepath) : null))
+        rows.filter((item) => (item.image = item.image ? handleImage(item.image, imagepath) : null))
 
         res.send({
             status: 'success',
             data: {
-                products: result,
+                count: count,
+                products: rows,
             },
         })
     } catch (error) {
@@ -35,14 +38,14 @@ exports.getProducts = async (req, res) => {
 //Get Product By Id
 exports.getProductByPk = async (req, res) => {
     try {
-        const result = await product
+        const result = await table
             .findByPk(req.params.id, {
                 attributes: {
                     exclude: ['createdAt', 'updatedAt'],
                 },
             })
             .then((res) => ({ ...res.dataValues, image: res.image ? handleImage(res.image, imagepath) : null }))
-            .catch(failed(res, 'Data Not Found', 400))
+            .catch(() => failed(res, 'Data Not Found', 400))
 
         res.send({
             status: 'succes',
@@ -70,7 +73,7 @@ exports.addProduct = async (req, res) => {
     }
 
     try {
-        const newProduct = await product
+        const newProduct = await table
             .create({
                 title: req.body.title,
                 price: req.body.price,
@@ -102,7 +105,7 @@ exports.updateProduct = async (req, res) => {
 
     if (req.file) {
         item.image = req.file.filename
-        const { image } = await product.findOne({
+        const { image } = await table.findOne({
             where: {
                 id,
             },
@@ -117,13 +120,13 @@ exports.updateProduct = async (req, res) => {
     }
 
     try {
-        await product.update(item, {
+        await table.update(item, {
             where: {
                 id,
             },
         })
 
-        const data = await product.findOne({
+        const data = await table.findOne({
             where: { id },
             attributes: {
                 exclude: ['createdAt', 'updatedAt'],
@@ -146,7 +149,7 @@ exports.deleteProduct = async (req, res) => {
     try {
         const { id } = req.params
 
-        const data = await product.update(
+        const data = await table.update(
             {
                 status: 'disabled',
             },

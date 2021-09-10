@@ -1,5 +1,5 @@
 const fs = require('fs')
-const { topping } = require('../../models')
+const { topping: table } = require('../../models')
 const { validCheck, handleImage, failed } = require('../functions')
 
 const imagepath = 'toppings'
@@ -17,17 +17,19 @@ exports.getToppings = async (req, res) => {
         if (limit) query.limit = parseInt(limit)
         if (offset) query.offset = parseInt(offset)
 
-        const result = await topping.findAll(query)
+        const { count, rows } = await table.findAndCountAll(query)
 
-        result.filter((item) => (item.image = item.image ? handleImage(item.image, imagepath) : null))
+        rows.filter((item) => (item.image = item.image ? handleImage(item.image, imagepath) : null))
 
         res.send({
             status: 'success',
             data: {
-                toppings: result,
+                count: count,
+                products: rows,
             },
         })
     } catch (error) {
+        console.log(error)
         failed(res, 'Server Error')
     }
 }
@@ -35,14 +37,14 @@ exports.getToppings = async (req, res) => {
 //Get Topping By Id
 exports.getToppingByPk = async (req, res) => {
     try {
-        const result = await topping
+        const result = await table
             .findByPk(req.params.id, {
                 attributes: {
                     exclude: ['createdAt', 'updatedAt'],
                 },
             })
             .then((res) => ({ ...res.dataValues, image: res.image ? handleImage(res.image, imagepath) : null }))
-            .catch(failed(res, 'Data Not Found', 400))
+            .catch(() => failed(res, 'Data Not Found', 400))
 
         res.send({
             status: 'succes',
@@ -51,6 +53,7 @@ exports.getToppingByPk = async (req, res) => {
             },
         })
     } catch (error) {
+        console.log(error)
         failed(res)
     }
 }
@@ -102,7 +105,7 @@ exports.updateTopping = async (req, res) => {
 
     if (req.file) {
         item.image = req.file.filename
-        const { image } = await topping.findOne({
+        const { image } = await table.findOne({
             where: {
                 id,
             },
@@ -117,13 +120,13 @@ exports.updateTopping = async (req, res) => {
     }
 
     try {
-        await topping.update(item, {
+        await table.update(item, {
             where: {
                 id,
             },
         })
 
-        const data = await topping.findOne({
+        const data = await table.findOne({
             where: { id },
             attributes: {
                 exclude: ['createdAt', 'updatedAt'],
@@ -146,7 +149,7 @@ exports.deleteTopping = async (req, res) => {
     try {
         const { id } = req.params
 
-        const data = await topping.update(
+        const data = await table.update(
             {
                 status: 'disabled',
             },

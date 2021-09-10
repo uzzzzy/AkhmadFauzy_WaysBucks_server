@@ -27,7 +27,6 @@ router.patch('/product/:id', authAdmin, updateFile('image'), updateProduct)
 router.delete('/product/:id', authAdmin, deleteProduct)
 
 // topping route
-
 router.get('/toppings', getToppings)
 router.get('/topping/:id', getToppingByPk)
 router.post('/topping', authAdmin, uploadFile('image'), addTopping)
