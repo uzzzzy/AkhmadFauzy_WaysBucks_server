@@ -1,12 +1,8 @@
 const jwt = require('jsonwebtoken')
 
-exports.auth = (req, res, next) => {
-    verify(req, res, next)
-}
+exports.auth = (req, res, next) => verify(req, res, next)
 
-exports.authAdmin = (req, res, next) => {
-    verify(req, res, next, 'admin')
-}
+exports.authAdmin = (req, res, next) => verify(req, res, next, 'admin')
 
 const verify = (req, res, next, roleOpt) => {
     const authHeader = req.header('Authorization')
@@ -25,7 +21,6 @@ const verify = (req, res, next, roleOpt) => {
         const verified = jwt.verify(token, process.env.TOKEN)
         if (verified.role === role) {
             req.user = verified
-
             next()
         } else {
             res.status(401).send({ message: 'Access Denied' })
