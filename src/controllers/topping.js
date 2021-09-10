@@ -1,34 +1,8 @@
 const fs = require('fs')
 const { topping } = require('../../models')
+const { validCheck, handleImage, failed } = require('../functions')
 
-const Joi = require('joi')
-
-const validCheck = (body) => {
-    let validator = {
-        title: Joi.string().min(6).required(),
-        price: Joi.number().integer(),
-    }
-
-    const schema = Joi.object(validator)
-
-    const { error } = schema.validate(body)
-
-    return error ? error : null
-}
-
-const handleImage = (image) => {
-    return process.env.UPLOAD + '/toppings/' + image
-}
-
-const failed = (res, message, status) => {
-    const responseCode = status ? status : 500
-    const responseMessage = message ? message : 'Server Error'
-
-    return res.status(responseCode).send({
-        status: 'failed',
-        message: responseMessage,
-    })
-}
+const imagepath = 'toppings'
 
 //Get All Topping
 exports.getToppings = async (req, res) => {
@@ -45,7 +19,7 @@ exports.getToppings = async (req, res) => {
 
         const result = await topping.findAll(query)
 
-        result.filter((item) => (item.image = handleImage(item.image)))
+        result.filter((item) => (item.image = item.image ? handleImage(item.image, imagepath) : null))
 
         res.send({
             status: 'success',
@@ -67,7 +41,7 @@ exports.getToppingByPk = async (req, res) => {
                     exclude: ['createdAt', 'updatedAt'],
                 },
             })
-            .then((res) => ({ ...res.dataValues, image: handleImage(res.image) }))
+            .then((res) => ({ ...res.dataValues, image: res.image ? handleImage(res.image, imagepath) : null }))
             .catch(failed(res, 'Data Not Found', 400))
 
         res.send({
