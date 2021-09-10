@@ -1,0 +1,8 @@
+node_modules
+
+uploads/users/*
+!/uploads/users/required.txt
+uploads/products/*
+!/uploads/products/required.txt
+uploads/toppings/*
+!/uploads/toppings/required.txt
