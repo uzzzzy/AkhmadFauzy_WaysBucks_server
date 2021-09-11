@@ -29,7 +29,6 @@ exports.getToppings = async (req, res) => {
             },
         })
     } catch (error) {
-        console.log(error)
         failed(res, 'Server Error')
     }
 }
@@ -53,7 +52,6 @@ exports.getToppingByPk = async (req, res) => {
             },
         })
     } catch (error) {
-        console.log(error)
         failed(res)
     }
 }
@@ -73,7 +71,7 @@ exports.addTopping = async (req, res) => {
     }
 
     try {
-        const newTopping = await topping
+        const newTopping = await table
             .create({
                 title: req.body.title,
                 price: req.body.price,
@@ -90,6 +88,7 @@ exports.addTopping = async (req, res) => {
             },
         })
     } catch (error) {
+        console.log(error)
         failed(res)
     }
 }
