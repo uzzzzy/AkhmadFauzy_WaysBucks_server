@@ -22,7 +22,7 @@ module.exports = {
                     key: 'id',
                 },
             },
-            At: {
+            createdAt: {
                 allowNull: false,
                 type: Sequelize.DATE,
             },

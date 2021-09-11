@@ -37,7 +37,7 @@ const resData = (req, res, next, upload, opt) => {
             if (opt === 'update') return next()
             else
                 return res.status(400).send({
-                    message: 'Please select a file to upload',
+                    message: 'Please select a image file to upload',
                 })
         }
 

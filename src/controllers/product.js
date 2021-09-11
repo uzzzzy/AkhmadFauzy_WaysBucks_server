@@ -7,7 +7,7 @@ const imagepath = 'products'
 //Get All Product
 exports.getProducts = async (req, res) => {
     try {
-        const { limit, offset, status } = req.query
+        const { limit, offset, status, order } = req.query
 
         const query = {
             attributes: {
@@ -18,6 +18,7 @@ exports.getProducts = async (req, res) => {
         if (status) query.where = { status }
         if (limit) query.limit = parseInt(limit)
         if (offset) query.offset = parseInt(offset)
+        if (order) query.order = [order.split(',')]
 
         const { count, rows } = await table.findAndCountAll(query)
 
@@ -31,7 +32,7 @@ exports.getProducts = async (req, res) => {
             },
         })
     } catch (error) {
-        failed(res, 'Server Error')
+        return failed(res, 'Server Error')
     }
 }
 
@@ -54,7 +55,7 @@ exports.getProductByPk = async (req, res) => {
             },
         })
     } catch (error) {
-        failed(res)
+        return failed(res)
     }
 }
 
@@ -69,7 +70,7 @@ exports.addProduct = async (req, res) => {
             }
         })
 
-        failed(res, 'No Data', 400)
+        return failed(res, 'No Data', 400)
     }
 
     try {
@@ -90,7 +91,7 @@ exports.addProduct = async (req, res) => {
             },
         })
     } catch (error) {
-        failed(res)
+        return failed(res)
     }
 }
 
@@ -102,6 +103,7 @@ exports.updateProduct = async (req, res) => {
     if (req.body.image !== 'undefined') item.image = req.body.image
     if (req.body.title !== '') item.title = req.body.title
     if (req.body.price !== '') item.price = req.body.price
+    if (req.body.status !== '') item.status = req.body.status
 
     if (req.file) {
         item.image = req.file.filename
@@ -140,7 +142,7 @@ exports.updateProduct = async (req, res) => {
             },
         })
     } catch (error) {
-        failed(res)
+        return failed(res)
     }
 }
 
@@ -165,6 +167,6 @@ exports.deleteProduct = async (req, res) => {
             },
         })
     } catch (error) {
-        failed(res)
+        return failed(res)
     }
 }

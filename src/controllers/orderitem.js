@@ -52,6 +52,6 @@ exports.getAllOrderItem = async (req, res) => {
             data: result,
         })
     } catch (error) {
-        failed(res)
+        return failed(res)
     }
 }

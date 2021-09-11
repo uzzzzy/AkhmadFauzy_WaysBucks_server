@@ -1,4 +1,4 @@
-const { orderitem: table, product, topping } = require('../../models')
+const { orderitem: table, ordertopping, product, topping } = require('../../models')
 const { handleImage, failed } = require('../functions')
 
 exports.getCartItem = async (req, res) => {
@@ -68,6 +68,86 @@ exports.getCartItem = async (req, res) => {
                       data: result,
                   }
         )
+    } catch (error) {
+        failed(res)
+    }
+}
+
+exports.addOrUpdateItem = async (req, res) => {
+    try {
+        let message
+        let id
+        const { body, user } = req
+
+        let result = await table
+            .findAll({
+                where: {
+                    userId: user.id,
+                    productId: body.productId,
+                    transactionDetailId: null,
+                },
+                attributes: ['id', 'qty'],
+                include: [
+                    {
+                        model: topping,
+                        attributes: ['id'],
+                        through: {
+                            attributes: [],
+                        },
+                    },
+                ],
+            })
+            .catch((err) => err)
+
+        if (result.length > 0) {
+            const orderItemId = result.map((item) => item.id)
+            const orderQty = result.map((item) => item.qty)
+            let toppings = result.map((item) => item.toppings)
+
+            toppings = toppings.map((item) => item.map((itemT) => itemT.id))
+            let tempId = null
+            toppings.forEach((item, i) => {
+                item.toString() === body.toppings ? (tempId = i) : null
+            })
+            console.log('update', orderItemId[tempId], orderQty[tempId])
+            await table.update(
+                {
+                    qty: orderQty[tempId] + body.qty,
+                },
+                {
+                    where: {
+                        id: orderItemId[tempId],
+                    },
+                }
+            )
+            message = {
+                status: 'success',
+                message: 'order quantity updated',
+            }
+        } else {
+            message = { status: 'success', message: 'order added to cart' }
+
+            const { id: orderId } = await table.create({
+                productId: req.body.productId,
+                userId: user.id,
+                qty: parseInt(req.body.qty),
+            })
+
+            if (body.toppings.length > 0) {
+                tl = []
+                body.toppings.split(',').map(
+                    (item, i) =>
+                        (tl[i] = {
+                            orderItemId: orderId,
+                            toppingId: parseInt(item),
+                        })
+                )
+
+                await ordertopping.bulkCreate(tl)
+            }
+        }
+
+        return res.send(message)
     } catch (error) {
         failed(res)
     }

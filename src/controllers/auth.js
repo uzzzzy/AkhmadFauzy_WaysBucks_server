@@ -61,7 +61,7 @@ exports.login = async (req, res) => {
             },
         })
     } catch (error) {
-        failed(res, 'Server Error')
+        return failed(res, 'Server Error')
     }
 }
 
@@ -107,8 +107,7 @@ exports.register = async (req, res) => {
             },
         })
     } catch (error) {
-        console.log(error)
-        failed(res, 'Server Error')
+        return failed(res, 'Server Error')
     }
 }
 
@@ -118,7 +117,7 @@ exports.verifyToken = async (req, res) => {
             attributes: ['email', 'fullName', 'image', 'status'],
         })
 
-        result.image = result.image ? 'http://localhost:5000/uploads/img/users/' + result.image : 'http://localhost:5000/uploads/img/users/profile.bmp'
+        result.image = result.image ? 'http://localhost:5000/uploads/users/' + result.image : 'http://localhost:5000/uploads/users/profile.jpg'
 
         res.send({
             status: 'succes',
@@ -127,6 +126,6 @@ exports.verifyToken = async (req, res) => {
             },
         })
     } catch (error) {
-        failed(res)
+        return failed(res)
     }
 }

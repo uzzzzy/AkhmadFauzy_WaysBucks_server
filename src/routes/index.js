@@ -6,7 +6,7 @@ const { login, register, verifyToken } = require('../controllers/auth')
 const { getUsers, deleteUser } = require('../controllers/user')
 const { getProducts, getProductByPk, addProduct, updateProduct, deleteProduct } = require('../controllers/product')
 const { getToppings, getToppingByPk, addTopping, updateTopping, deleteTopping } = require('../controllers/topping')
-const { getCartItem } = require('../controllers/cart')
+const { getCartItem, addOrUpdateItem } = require('../controllers/cart')
 
 const { auth, authAdmin } = require('../middlewares/auth')
 const { uploadFile, updateFile } = require('../middlewares/upload')
@@ -35,6 +35,7 @@ router.patch('/topping/:id', authAdmin, updateFile('image'), updateTopping)
 router.delete('/topping/:id', authAdmin, deleteTopping)
 
 // orderitem route
-router.get('/mycart', auth, getCartItem)
+router.get('/cart', auth, getCartItem)
+router.post('/cart', auth, addOrUpdateItem)
 
 module.exports = router

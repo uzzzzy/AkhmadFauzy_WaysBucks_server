@@ -32,7 +32,7 @@ exports.getUsers = async (req, res) => {
             },
         })
     } catch (error) {
-        failed(res, 'Server Error')
+        return failed(res, 'Server Error')
     }
 }
 
@@ -58,6 +58,6 @@ exports.deleteUser = async (req, res) => {
             },
         })
     } catch (error) {
-        failed(res, 'Server Error')
+        return failed(res, 'Server Error')
     }
 }

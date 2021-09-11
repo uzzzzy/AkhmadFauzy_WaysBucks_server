@@ -25,11 +25,11 @@ exports.getToppings = async (req, res) => {
             status: 'success',
             data: {
                 count: count,
-                products: rows,
+                toppings: rows,
             },
         })
     } catch (error) {
-        failed(res, 'Server Error')
+        return failed(res, 'Server Error')
     }
 }
 
@@ -52,7 +52,7 @@ exports.getToppingByPk = async (req, res) => {
             },
         })
     } catch (error) {
-        failed(res)
+        return failed(res)
     }
 }
 
@@ -67,7 +67,7 @@ exports.addTopping = async (req, res) => {
             }
         })
 
-        failed(res, 'No Data', 400)
+        return failed(res, 'No Data', 400)
     }
 
     try {
@@ -88,8 +88,7 @@ exports.addTopping = async (req, res) => {
             },
         })
     } catch (error) {
-        console.log(error)
-        failed(res)
+        return failed(res)
     }
 }
 
@@ -101,6 +100,7 @@ exports.updateTopping = async (req, res) => {
     if (req.body.image !== 'undefined') item.image = req.body.image
     if (req.body.title !== '') item.title = req.body.title
     if (req.body.price !== '') item.price = req.body.price
+    if (req.body.status !== '') item.status = req.body.status
 
     if (req.file) {
         item.image = req.file.filename
@@ -139,7 +139,7 @@ exports.updateTopping = async (req, res) => {
             },
         })
     } catch (error) {
-        failed(res)
+        return failed(res)
     }
 }
 
@@ -164,6 +164,6 @@ exports.deleteTopping = async (req, res) => {
             },
         })
     } catch (error) {
-        failed(res)
+        return failed(res)
     }
 }
