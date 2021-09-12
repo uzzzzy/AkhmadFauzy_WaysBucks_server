@@ -10,17 +10,9 @@ module.exports = {
             },
             orderItemId: {
                 type: Sequelize.INTEGER,
-                references: {
-                    model: 'orderitems',
-                    key: 'id',
-                },
             },
             toppingId: {
                 type: Sequelize.INTEGER,
-                references: {
-                    model: 'toppings',
-                    key: 'id',
-                },
             },
             createdAt: {
                 allowNull: false,

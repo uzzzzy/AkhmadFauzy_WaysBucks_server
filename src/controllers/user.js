@@ -1,5 +1,4 @@
 const { user } = require('../../models')
-const { Op } = require('sequelize')
 
 const failed = (res, message, status) => {
     const responseCode = status ? status : 500

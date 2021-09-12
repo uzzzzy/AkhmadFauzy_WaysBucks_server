@@ -14,6 +14,12 @@ module.exports = (sequelize, DataTypes) => {
                     name: 'userId',
                 },
             })
+
+            transaction.hasMany(models.orderitem, {
+                foreignKey: {
+                    name: 'transactionDetailId',
+                },
+            })
         }
     }
     transaction.init(

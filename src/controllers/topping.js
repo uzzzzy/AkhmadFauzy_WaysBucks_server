@@ -7,7 +7,13 @@ const imagepath = 'toppings'
 //Get All Topping
 exports.getToppings = async (req, res) => {
     try {
+        const { status } = req.query
+        const where = {}
+
+        if (status) where.status = status
+
         const query = {
+            where: where,
             attributes: {
                 exclude: ['createdAt', 'updatedAt'],
             },
@@ -36,8 +42,14 @@ exports.getToppings = async (req, res) => {
 //Get Topping By Id
 exports.getToppingByPk = async (req, res) => {
     try {
+        const { status } = req.query
+        const where = {}
+
+        if (status) where.status = status
+
         const result = await table
             .findByPk(req.params.id, {
+                where: where,
                 attributes: {
                     exclude: ['createdAt', 'updatedAt'],
                 },

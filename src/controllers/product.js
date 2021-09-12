@@ -39,8 +39,14 @@ exports.getProducts = async (req, res) => {
 //Get Product By Id
 exports.getProductByPk = async (req, res) => {
     try {
+        const { status } = req.query
+        const where = {}
+
+        if (status) where.status = status
+
         const result = await table
             .findByPk(req.params.id, {
+                where: {},
                 attributes: {
                     exclude: ['createdAt', 'updatedAt'],
                 },
@@ -55,6 +61,7 @@ exports.getProductByPk = async (req, res) => {
             },
         })
     } catch (error) {
+        console.log(error)
         return failed(res)
     }
 }

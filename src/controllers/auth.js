@@ -88,7 +88,7 @@ exports.register = async (req, res) => {
             fullName: req.body.fullName,
             email: req.body.email,
             password: hashedPassword,
-            status: 'user',
+            status: 'customer',
         })
 
         const token = jwt.sign(

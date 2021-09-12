@@ -6,7 +6,7 @@ exports.authAdmin = (req, res, next) => verify(req, res, next, 'admin')
 
 const verify = (req, res, next, roleOpt) => {
     const authHeader = req.header('Authorization')
-    if (!authHeader) return res.status(400).send({ status: 'failed', message: 'No Token' })
+    if (!authHeader) return res.status(401).send({ status: 'failed', message: 'No Token' })
     const token = authHeader.split(' ')[1]
     const role = roleOpt ? roleOpt : 'customer'
 

@@ -6,7 +6,8 @@ const { login, register, verifyToken } = require('../controllers/auth')
 const { getUsers, deleteUser } = require('../controllers/user')
 const { getProducts, getProductByPk, addProduct, updateProduct, deleteProduct } = require('../controllers/product')
 const { getToppings, getToppingByPk, addTopping, updateTopping, deleteTopping } = require('../controllers/topping')
-const { getCartItem, addOrUpdateItem } = require('../controllers/cart')
+const { getCartItem, addOrUpdateItem, deleteCartItem } = require('../controllers/orderitem')
+const { getTransactionList, addTransaction, getTransactions } = require('../controllers/transaction')
 
 const { auth, authAdmin } = require('../middlewares/auth')
 const { uploadFile, updateFile } = require('../middlewares/upload')
@@ -34,8 +35,13 @@ router.post('/topping', authAdmin, uploadFile('image'), addTopping)
 router.patch('/topping/:id', authAdmin, updateFile('image'), updateTopping)
 router.delete('/topping/:id', authAdmin, deleteTopping)
 
-// orderitem route
+// cart route
 router.get('/cart', auth, getCartItem)
 router.post('/cart', auth, addOrUpdateItem)
+router.delete('/cart/:id', auth, deleteCartItem)
+
+// transaction route
+router.get('/transactions', auth, getTransactions)
+router.post('/transaction', auth, uploadFile('image'), addTransaction)
 
 module.exports = router

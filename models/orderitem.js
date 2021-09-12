@@ -20,7 +20,7 @@ module.exports = (sequelize, DataTypes) => {
                 foreignKey: 'orderItemId',
             })
 
-            orderitem.hasOne(models.transaction, {
+            orderitem.belongsTo(models.transaction, {
                 foreignKey: {
                     name: 'transactionDetailId',
                 },
