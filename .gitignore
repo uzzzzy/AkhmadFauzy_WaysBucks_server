@@ -6,3 +6,5 @@ uploads/products/*
 !/uploads/products/required.txt
 uploads/toppings/*
 !/uploads/toppings/required.txt
+uploads/transactions/*
+!/uploads/transactions/required.txt
