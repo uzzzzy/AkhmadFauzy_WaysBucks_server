@@ -3,11 +3,11 @@ const express = require('express')
 const router = express.Router()
 
 const { login, register, verifyToken } = require('../controllers/auth')
-const { getUsers, deleteUser } = require('../controllers/user')
+const { getUsers, updateUser, deleteUser } = require('../controllers/user')
 const { getProducts, getProductByPk, addProduct, updateProduct, deleteProduct } = require('../controllers/product')
 const { getToppings, getToppingByPk, addTopping, updateTopping, deleteTopping } = require('../controllers/topping')
 const { getCartItem, addOrUpdateItem, deleteCartItem } = require('../controllers/orderitem')
-const { addTransaction, getTransactions, getTransaction, updateTransaction } = require('../controllers/transaction')
+const { getTransactions, getTransaction, addTransaction, updateTransaction } = require('../controllers/transaction')
 
 const { auth, authAdmin } = require('../middlewares/auth')
 const { uploadFile, updateFile } = require('../middlewares/upload')
@@ -19,7 +19,8 @@ router.post('/verify', auth, verifyToken)
 
 // user route
 router.get('/users', authAdmin, getUsers)
-router.delete('/user/:id', auth, deleteUser)
+router.patch('/user', auth, updateFile('image'), updateUser)
+router.delete('/user/:id', authAdmin, deleteUser)
 
 // product route
 router.get('/products', getProducts)

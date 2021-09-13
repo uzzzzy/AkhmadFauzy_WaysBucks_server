@@ -2,9 +2,6 @@ const fs = require('fs')
 const { transaction: table, orderitem, product, topping, user } = require('../../models')
 const { handleImage, failed, validCheck } = require('../functions')
 
-const { Op } = require('sequelize')
-const { parse } = require('path')
-
 //get all transaction data
 exports.getTransactions = async (req, res) => {
     try {
