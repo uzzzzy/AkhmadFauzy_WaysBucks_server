@@ -66,11 +66,6 @@ exports.deleteUser = async (req, res) => {
 exports.updateUser = async (req, res) => {
     const { fullName, email } = req.body
 
-    const body = {
-        fullName,
-        email,
-    }
-
     if (fullName || email) {
         let validator = {}
         let body = {}
@@ -117,18 +112,16 @@ exports.updateUser = async (req, res) => {
                         }
                     })
             })
-        await user.update(
-            {
-                image,
-                fullName,
-                email,
+        let update = {}
+        if (email) update.email = email
+        if (fullName) update.fullName = fullName
+        if (req.file.filename) update.image = req.file.filename
+
+        await user.update(update, {
+            where: {
+                id,
             },
-            {
-                where: {
-                    id,
-                },
-            }
-        )
+        })
     } else message = 'No Data Updated'
     return res.send({
         status: 'success',

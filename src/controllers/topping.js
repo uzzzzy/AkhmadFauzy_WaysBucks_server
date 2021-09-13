@@ -7,21 +7,18 @@ const imagepath = 'toppings'
 //Get All Topping
 exports.getToppings = async (req, res) => {
     try {
-        const { status } = req.query
-        const where = {}
-
-        if (status) where.status = status
+        const { limit, offset, status, order } = req.query
 
         const query = {
-            where: where,
             attributes: {
                 exclude: ['createdAt', 'updatedAt'],
             },
         }
-        const { limit, offset } = req.query
 
+        if (status) query.where = { status }
         if (limit) query.limit = parseInt(limit)
         if (offset) query.offset = parseInt(offset)
+        if (order) query.order = [order.split(',')]
 
         const { count, rows } = await table.findAndCountAll(query)
 
