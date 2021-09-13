@@ -1,5 +1,5 @@
 const fs = require('fs')
-const { transaction: table, orderitem, product, topping } = require('../../models')
+const { transaction: table, orderitem, product, topping, user } = require('../../models')
 const { handleImage, failed, validCheck } = require('../functions')
 
 const { Op } = require('sequelize')
@@ -44,36 +44,44 @@ exports.addTransaction = async (req, res) => {
                 },
             }
         )
-
-        return res.send({
-            status: 'success',
-            message: 'Wait for your order to be confirmed',
-        })
     } catch (error) {
         failed(res)
     }
+
+    return res.send({
+        status: 'success',
+        message: 'Wait for your order to be confirmed',
+    })
 }
 
 //get all transaction data
 exports.getTransactions = async (req, res) => {
     try {
         const { id, role } = req.user //get user
-        const { status, userId, order: orderBy } = req.query //get query
+        const { status, userId, order: orderBy, attributes: attr, limit: limitQ, offset: offsetQ } = req.query //get query
 
+        const attributes = attr
+            ? attr.split(',')
+            : {
+                  exclude: ['userId', 'createdAt', 'updatedAt'],
+              }
         const where = {}
 
         if (status) where.status = status
-        if (userId) where.userId = role !== 'admin' ? id : userId
+        if (userId || role === 'customer') where.userId = role !== 'admin' ? id : userId
         const order = orderBy ? [orderBy.split(',')] : undefined
 
-        const result = await table.findAll({
+        let limit = limitQ ? parseInt(limitQ) : undefined
+        let offset = offsetQ ? parseInt(offsetQ) : undefined
+
+        const query = {
             where: where,
-            attributes: {
-                exclude: ['userId', 'createdAt', 'updatedAt'],
-            },
+            limit,
+            offset,
+            attributes,
             include: {
                 model: orderitem,
-                attributes: ['id'],
+                attributes: ['id', 'qty'],
                 include: [
                     {
                         model: product,
@@ -91,6 +99,30 @@ exports.getTransactions = async (req, res) => {
                 ],
             },
             order,
+        }
+
+        let result = []
+
+        await table.findAll(query).then((res) => {
+            res.forEach((trans, i) => {
+                let total = 0
+                trans.orderitems.forEach((item) => {
+                    item.product.image = handleImage(item.product.image, 'products')
+                    total += item.product.price
+                    item.toppings.forEach((topping) => {
+                        topping.image = handleImage(topping.image, 'toppings')
+                        total += topping.price
+                    })
+                    total *= item.qty
+                })
+                result[i] = {
+                    id: trans.id,
+                    status: trans.status,
+                    attachment: handleImage(trans.attachment, 'transactions'),
+                    total: total + total * 0.1,
+                    orderitems: trans.orderitems,
+                }
+            })
         })
 
         return res.send({
@@ -98,6 +130,90 @@ exports.getTransactions = async (req, res) => {
             data: {
                 transactions: result,
             },
+        })
+    } catch (error) {
+        console.log(error)
+        failed(res)
+    }
+}
+
+//get transaction by pk
+exports.getTransaction = async (req, res) => {
+    try {
+        const { id, role } = req.user //get user
+        const { status, userId, order: orderBy, attributes: attr, limit: limitQ, offset: offsetQ } = req.query //get query
+        const { id: transactionId } = req.params
+
+        const attributes = attr
+            ? attr.split(',')
+            : {
+                  exclude: ['userId', 'createdAt', 'updatedAt'],
+              }
+        const where = {
+            id: transactionId,
+        }
+
+        console.log(attributes)
+
+        if (status) where.status = status
+        if (userId || role === 'customer') where.userId = role !== 'admin' ? id : userId
+        const order = orderBy ? [orderBy.split(',')] : undefined
+
+        let limit = limitQ ? parseInt(limitQ) : undefined
+        let offset = offsetQ ? parseInt(offsetQ) : undefined
+
+        const query = {
+            where: where,
+            limit,
+            offset,
+            attributes,
+            include: [
+                {
+                    model: user,
+                    attributes: ['fullName', 'email'],
+                },
+                {
+                    model: orderitem,
+                    attributes: ['id', 'qty'],
+                    include: [
+                        {
+                            model: product,
+                            attributes: {
+                                exclude: ['status', 'createdAt', 'updatedAt'],
+                            },
+                        },
+                        {
+                            model: topping,
+                            attributes: ['id', 'title', 'price', 'image'],
+                            through: {
+                                attributes: [],
+                            },
+                        },
+                    ],
+                },
+            ],
+            order,
+        }
+
+        let data = {}
+        await table.findOne(query).then((trans) => {
+            let total = 0
+            trans.attachment = handleImage(trans.attachment, 'transactions')
+            trans.orderitems = trans.orderitems.forEach((item) => {
+                item.product.image = handleImage(item.product.image, 'products')
+                total += item.product.price
+                item.toppings.forEach((topping) => {
+                    topping.image = handleImage(topping.image, 'toppings')
+                    total += topping.price
+                })
+                total *= item.qty
+            })
+            data = { transaction: trans, total: total + total * 0.1 }
+        })
+
+        return res.send({
+            status: 'success',
+            data,
         })
     } catch (error) {
         failed(res)

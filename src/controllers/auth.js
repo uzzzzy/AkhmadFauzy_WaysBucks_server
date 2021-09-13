@@ -117,7 +117,7 @@ exports.verifyToken = async (req, res) => {
             attributes: ['email', 'fullName', 'image', 'status'],
         })
 
-        result.image = result.image ? 'http://localhost:5000/uploads/users/' + result.image : 'http://localhost:5000/uploads/users/profile.jpg'
+        result.image = result.image ? 'http://localhost:5000/uploads/users/' + result.image : 'http://localhost:5000/uploads/profile.jpg'
 
         res.send({
             status: 'succes',

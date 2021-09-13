@@ -7,7 +7,7 @@ const { getUsers, deleteUser } = require('../controllers/user')
 const { getProducts, getProductByPk, addProduct, updateProduct, deleteProduct } = require('../controllers/product')
 const { getToppings, getToppingByPk, addTopping, updateTopping, deleteTopping } = require('../controllers/topping')
 const { getCartItem, addOrUpdateItem, deleteCartItem } = require('../controllers/orderitem')
-const { getTransactionList, addTransaction, getTransactions } = require('../controllers/transaction')
+const { getTransactionList, addTransaction, getTransactions, getTransaction } = require('../controllers/transaction')
 
 const { auth, authAdmin } = require('../middlewares/auth')
 const { uploadFile, updateFile } = require('../middlewares/upload')
@@ -42,6 +42,7 @@ router.delete('/cart/:id', auth, deleteCartItem)
 
 // transaction route
 router.get('/transactions', auth, getTransactions)
+router.get('/transaction/:id', auth, getTransaction)
 router.post('/transaction', auth, uploadFile('image'), addTransaction)
 
 module.exports = router
