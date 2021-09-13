@@ -3,56 +3,7 @@ const { transaction: table, orderitem, product, topping, user } = require('../..
 const { handleImage, failed, validCheck } = require('../functions')
 
 const { Op } = require('sequelize')
-
-exports.addTransaction = async (req, res) => {
-    const { body } = req
-    console.log(body)
-    const error = validCheck(body, 'transaction')
-
-    if (error) {
-        fs.unlink('./uploads/transactions/' + req.file.filename, (err) => {
-            if (err) {
-                console.error(err)
-            }
-        })
-        return failed(res, error.details[0].message, 400)
-    }
-
-    try {
-        const { id } = await table
-            .create({
-                userId: req.user.id,
-                status: 'waiting',
-                fullName: req.body.fullName,
-                email: req.body.email,
-                phone: req.body.phone,
-                poscode: req.body.poscode,
-                address: req.body.address,
-                attachment: req.file.filename,
-            })
-            .catch((err) => failed(res, err, 400))
-        console.log(id)
-
-        orderitem.update(
-            {
-                transactionDetailId: id,
-            },
-            {
-                where: {
-                    userId: req.user.id,
-                    transactionDetailId: null,
-                },
-            }
-        )
-    } catch (error) {
-        failed(res)
-    }
-
-    return res.send({
-        status: 'success',
-        message: 'Wait for your order to be confirmed',
-    })
-}
+const { parse } = require('path')
 
 //get all transaction data
 exports.getTransactions = async (req, res) => {
@@ -60,16 +11,14 @@ exports.getTransactions = async (req, res) => {
         const { id, role } = req.user //get user
         const { status, userId, order: orderBy, attributes: attr, limit: limitQ, offset: offsetQ } = req.query //get query
 
-        const attributes = attr
-            ? attr.split(',')
-            : {
-                  exclude: ['userId', 'createdAt', 'updatedAt'],
-              }
+        const attributes = attr ? attr.split(',') : undefined
         const where = {}
 
         if (status) where.status = status
         if (userId || role === 'customer') where.userId = role !== 'admin' ? id : userId
         const order = orderBy ? [orderBy.split(',')] : undefined
+
+        console.log(order)
 
         let limit = limitQ ? parseInt(limitQ) : undefined
         let offset = offsetQ ? parseInt(offsetQ) : undefined
@@ -79,6 +28,7 @@ exports.getTransactions = async (req, res) => {
             limit,
             offset,
             attributes,
+            distinct: true,
             include: {
                 model: orderitem,
                 attributes: ['id', 'qty'],
@@ -102,9 +52,10 @@ exports.getTransactions = async (req, res) => {
         }
 
         let result = []
-
-        await table.findAll(query).then((res) => {
-            res.forEach((trans, i) => {
+        let count
+        await table.findAndCountAll(query).then((res) => {
+            count = res.count
+            res.rows.forEach((trans, i) => {
                 let total = 0
                 trans.orderitems.forEach((item) => {
                     item.product.image = handleImage(item.product.image, 'products')
@@ -118,6 +69,9 @@ exports.getTransactions = async (req, res) => {
                 result[i] = {
                     id: trans.id,
                     status: trans.status,
+                    address: trans.address,
+                    poscode: trans.poscode,
+                    phone: trans.phone,
                     attachment: handleImage(trans.attachment, 'transactions'),
                     total: total + total * 0.1,
                     orderitems: trans.orderitems,
@@ -128,6 +82,7 @@ exports.getTransactions = async (req, res) => {
         return res.send({
             status: 'success',
             data: {
+                count,
                 transactions: result,
             },
         })
@@ -214,6 +169,85 @@ exports.getTransaction = async (req, res) => {
         return res.send({
             status: 'success',
             data,
+        })
+    } catch (error) {
+        failed(res)
+    }
+}
+
+exports.addTransaction = async (req, res) => {
+    const { body } = req
+    console.log(body)
+    const error = validCheck(body, 'transaction')
+
+    if (error) {
+        fs.unlink('./uploads/transactions/' + req.file.filename, (err) => {
+            if (err) {
+                console.error(err)
+            }
+        })
+        return failed(res, error.details[0].message, 400)
+    }
+
+    try {
+        const { id } = await table
+            .create({
+                userId: req.user.id,
+                status: 'waiting',
+                fullName: req.body.fullName,
+                email: req.body.email,
+                phone: req.body.phone,
+                poscode: req.body.poscode,
+                address: req.body.address,
+                attachment: req.file.filename,
+            })
+            .catch((err) => failed(res, err, 400))
+        console.log(id)
+
+        orderitem.update(
+            {
+                transactionDetailId: id,
+            },
+            {
+                where: {
+                    userId: req.user.id,
+                    transactionDetailId: null,
+                },
+            }
+        )
+    } catch (error) {
+        failed(res)
+    }
+
+    return res.send({
+        status: 'success',
+        message: 'Wait for your order to be confirmed',
+    })
+}
+
+exports.updateTransaction = async (req, res) => {
+    try {
+        const { id, role } = req.params
+        const { status } = req.body
+
+        const query = {
+            where: {
+                id,
+            },
+        }
+        await table.update(
+            {
+                status,
+            },
+            query
+        )
+
+        const message = status === 'approve' ? 'approved' : status === 'otw' ? 'send' : 'canceled'
+
+        return res.send({
+            status: 'success',
+            message: 'order has been ' + message,
+            status,
         })
     } catch (error) {
         failed(res)
