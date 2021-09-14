@@ -83,7 +83,6 @@ exports.updateUser = async (req, res) => {
         const { error } = schema.validate(body)
 
         if (error && req.file) {
-            console.log(req.file.filename)
             fs.unlink('./uploads/users/' + req.file.filename, (err) => {
                 if (err) {
                     console.error(err)
@@ -98,8 +97,6 @@ exports.updateUser = async (req, res) => {
     const id = req.user.id
     let message = 'Data Updated'
     if (email || fullName || req.file?.filename) {
-        const image = req.file ? req.file.filename : undefined
-
         await user
             .findByPk(id, {
                 attributes: ['image'],
@@ -115,7 +112,7 @@ exports.updateUser = async (req, res) => {
         let update = {}
         if (email) update.email = email
         if (fullName) update.fullName = fullName
-        if (req.file.filename) update.image = req.file.filename
+        if (req.file?.filename) update.image = req.file.filename
 
         await user.update(update, {
             where: {

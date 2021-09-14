@@ -56,12 +56,13 @@ exports.getTransactions = async (req, res) => {
                 let total = 0
                 trans.orderitems.forEach((item) => {
                     item.product.image = handleImage(item.product.image, 'products')
-                    total += item.product.price
+                    let itemTotal = item.product.price
+                    let toppingTotal = 0
                     item.toppings.forEach((topping) => {
                         topping.image = handleImage(topping.image, 'toppings')
-                        total += topping.price
+                        toppingTotal += topping.price
                     })
-                    total *= item.qty
+                    total = total + (itemTotal + toppingTotal) * item.qty
                 })
                 result[i] = {
                     id: trans.id,
@@ -101,23 +102,16 @@ exports.getTransaction = async (req, res) => {
             : {
                   exclude: ['userId', 'createdAt', 'updatedAt'],
               }
+
         const where = {
             id: transactionId,
         }
 
-        console.log(attributes)
-
         if (status) where.status = status
         if (userId || role === 'customer') where.userId = role !== 'admin' ? id : userId
-        const order = orderBy ? [orderBy.split(',')] : undefined
-
-        let limit = limitQ ? parseInt(limitQ) : undefined
-        let offset = offsetQ ? parseInt(offsetQ) : undefined
 
         const query = {
             where: where,
-            limit,
-            offset,
             attributes,
             include: [
                 {
@@ -144,7 +138,6 @@ exports.getTransaction = async (req, res) => {
                     ],
                 },
             ],
-            order,
         }
 
         let data = {}
@@ -153,12 +146,13 @@ exports.getTransaction = async (req, res) => {
             trans.attachment = handleImage(trans.attachment, 'transactions')
             trans.orderitems = trans.orderitems.forEach((item) => {
                 item.product.image = handleImage(item.product.image, 'products')
-                total += item.product.price
+                let itemTotal = item.product.price
+                let toppingTotal = 0
                 item.toppings.forEach((topping) => {
                     topping.image = handleImage(topping.image, 'toppings')
-                    total += topping.price
+                    toppingTotal += topping.price
                 })
-                total *= item.qty
+                total = total + (itemTotal + toppingTotal) * item.qty
             })
             data = { transaction: trans, total: total + total * 0.1 }
         })
