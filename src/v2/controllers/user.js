@@ -6,7 +6,7 @@ exports.getUsers = async (req, res) => {
     let query = {
         distinct: true,
         attributes: {
-            exclude: ['', 'createdAt', 'updatedAt'],
+            exclude: ['createdAt', 'updatedAt'],
         },
     }
 
@@ -30,6 +30,24 @@ exports.getUsers = async (req, res) => {
                     users: rows,
                 })
             )
+    } catch (error) {
+        failed(res)
+    }
+}
+
+exports.getUserByPk = async (req, res) => {
+    let query = {
+        distinct: true,
+        attributes: {
+            exclude: ['password', 'createdAt', 'updatedAt'],
+        },
+    }
+
+    try {
+        const { id } = req.params
+        await table.findByPk({
+            id,
+        })
     } catch (error) {
         failed(res)
     }

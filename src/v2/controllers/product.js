@@ -4,14 +4,13 @@ const { models, success, failed } = require('../functions')
 
 const { product: table } = models
 
-let query = {
-    distinct: true,
-    attributes: {
-        exclude: ['', 'createdAt', 'updatedAt'],
-    },
-}
-
 exports.getProducts = async (req, res) => {
+    let query = {
+        distinct: true,
+        attributes: {
+            exclude: ['createdAt', 'updatedAt'],
+        },
+    }
     try {
         const { status, title, order, limit, offset, type } = req.query
 
@@ -47,6 +46,13 @@ exports.getProducts = async (req, res) => {
 }
 
 exports.getProduct = async (req, res) => {
+    let query = {
+        distinct: true,
+        attributes: {
+            exclude: ['createdAt', 'updatedAt'],
+        },
+    }
+
     try {
         const { id } = req.params
 

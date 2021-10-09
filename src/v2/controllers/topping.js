@@ -4,14 +4,14 @@ const { models, success, failed } = require('../functions')
 
 const { topping: table } = models
 
-let query = {
-    distinct: true,
-    attributes: {
-        exclude: ['', 'createdAt', 'updatedAt'],
-    },
-}
-
 exports.getToppings = async (req, res) => {
+    let query = {
+        distinct: true,
+        attributes: {
+            exclude: ['createdAt', 'updatedAt'],
+        },
+    }
+
     try {
         const { status, title, order, limit, offset, type } = req.query
 
@@ -49,6 +49,13 @@ exports.getToppings = async (req, res) => {
 }
 
 exports.getTopping = async (req, res) => {
+    let query = {
+        distinct: true,
+        attributes: {
+            exclude: ['createdAt', 'updatedAt'],
+        },
+    }
+
     try {
         const { id } = req.params
 

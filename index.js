@@ -5,7 +5,7 @@ const { Server } = require('socket.io')
 
 const express = require('express')
 
-const apiVer = 2
+const apiVer = 1
 
 const app = express()
 
